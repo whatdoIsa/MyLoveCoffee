@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id           String    @id @unique @default(uuid())
+  email        String    @unique
+  name         String    @unique
+  profile      String?
+  passwordHash String    @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  review       Review[]  @relation("author")
+  likes        Review[]
+  followers    Follows[] @relation("following")
+  following    Follows[] @relation("follower")
+}
+
+model Follows {
+  follower    User   @relation("follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User   @relation("following", fields: [followingId], references: [id])
+  followingId String
+
+  @@id([followerId, followingId])
+}
+
+model Review {
+  id           String   @id @unique @default(uuid())
+  cafeId       String
+  name         String
+  reviewImages String?
+  description  String
+  starRating   Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  visited      Boolean  @default(false)
+  good         String
+  notGood      String
+  tags         String?
+  recommend    String
+  x            String
+  y            String
+  authorId     String
+  author       User?    @relation("author", fields: [authorId], references: [id])
+  likedBy      User[]
+}
